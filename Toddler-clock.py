@@ -63,7 +63,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS (NO LOADING ICONS) ---
+# --- 4. CSS (BUTTON RECOVERY) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -73,23 +73,24 @@ st.markdown(f"""
         font-family: 'Inter', sans-serif;
     }}
 
-    /* --- THE CLEANUP --- */
-    /* This kills the 'Running' wheelchair icon and the status bar */
-    [data-testid="stStatusWidget"], .stStatusWidget, [data-testid="stToolbar"] {{
-        visibility: hidden !important;
+    /* HIDE THE LOADING ICON BUT PROTECT THE SIDEBAR BUTTON */
+    /* We hide the 'Action Elements' on the right only */
+    [data-testid="stHeaderActionElements"], .stDeployButton {{
         display: none !important;
     }}
 
-    /* Hides the 'Running...' toast notification at the bottom */
-    [data-testid="stNotification"] {{
-        display: none !important;
-    }}
-
-    /* Sidebar button - simple and visible */
+    /* REPOSITION SIDEBAR BUTTON BELOW YOUR CASE/HOLDER */
     [data-testid="stSidebarCollapseButton"] {{
+        position: fixed !important;
+        top: 100px !important; /* Adjusted to sit below your physical frame */
+        left: 15px !important;
         background-color: rgba(255,255,255,0.2) !important;
-        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.4) !important;
+        border-radius: 50% !important;
         color: white !important;
+        z-index: 99999 !important;
+        display: flex !important;
+        visibility: visible !important;
     }}
 
     .glass-card {{
