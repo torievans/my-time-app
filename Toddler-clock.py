@@ -4,18 +4,25 @@ import pytz
 import time
 
 # --- 0. PAGE CONFIG ---
+# Must be the first Streamlit command. Forces sidebar open by default.
 st.set_page_config(
     page_title="Toddler Clock",
     initial_sidebar_state="expanded"
 )
 
-# --- 1. SIDEBAR / LOCATION ---
+# --- 1. SIDEBAR / LOCATION SETTINGS ---
 st.sidebar.header("🌍 Location Settings")
+
 all_tz = pytz.all_timezones
+# London first, Barcelona second as requested
 favorites = ['Europe/London', 'Europe/Barcelona']
 final_tz_list = favorites + [tz for tz in all_tz if tz not in favorites]
 
-selected_tz = st.sidebar.selectbox("Select your Timezone", options=final_tz_list, index=0)
+selected_tz = st.sidebar.selectbox(
+    "Select your Timezone",
+    options=final_tz_list,
+    index=0  # Defaults to London
+)
 
 # --- 2. TIME SETUP ---
 try:
@@ -37,20 +44,20 @@ st.sidebar.markdown("---")
 st.sidebar.header("🛠️ Developer Tools")
 manual_mode = st.sidebar.checkbox("Manual Time Override (Preview)")
 
+# Determine time string (12-hour format, no leading zero, no am/pm)
 if manual_mode:
     decimal_time = st.sidebar.slider("Test Time", 0.0, 23.9, float(hour + minute/60))
     h_24 = int(decimal_time)
     m = int((decimal_time % 1) * 60)
-    # Convert 24h to 12h without leading zero and without am/pm
     h_12 = h_24 % 12
     h_12 = 12 if h_12 == 0 else h_12
     current_time_string = f"{h_12}.{m:02d}"
 else:
     decimal_time = hour + (minute / 60)
-    # %-I removes leading zero, . replaces :
+    # %-I removes leading zero on Linux/Streamlit Cloud
     current_time_string = now.strftime("%-I.%M")
 
-# --- 3. LOGIC ---
+# --- 3. LOGIC & COLORS ---
 sleep_s = sleep_start_i.hour + (sleep_start_i.minute / 60)
 wake_s = wake_up_i.hour + (wake_up_i.minute / 60)
 
@@ -65,7 +72,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS ---
+# --- 4. CSS (TOTAL UI CLEANUP) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -75,13 +82,42 @@ st.markdown(f"""
         font-family: 'Inter', sans-serif;
         transition: background 3s ease-in-out;
     }}
-    
-    [data-testid="stSidebarCollapseButton"] {{
-        background-color: rgba(255,255,255,0.2) !important;
-        border-radius: 50%;
-        color: white !important;
+
+    /* HIDE TOP-RIGHT GITHUB/FORK/MENU (Mobile & Desktop) */
+    [data-testid="stHeaderActionElements"], 
+    .stDeployButton, 
+    [data-testid="stToolbar"],
+    header {{
+        display: none !important;
+        visibility: hidden !important;
     }}
 
+    /* DETACHED FLOATING SIDEBAR BUTTON */
+    [data-testid="stSidebarCollapseButton"] {{
+        position: fixed !important;
+        top: 20px !important;
+        left: 20px !important;
+        background-color: rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        border-radius: 50% !important;
+        width: 50px !important;
+        height: 50px !important;
+        color: white !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        visibility: visible !important; /* Forces it to stay visible */
+    }}
+
+    /* Adjust SVG icon size inside the floating button */
+    [data-testid="stSidebarCollapseButton"] svg {{
+        width: 26px !important;
+        height: 26px !important;
+    }}
+
+    /* MAIN GLASS CARD */
     .glass-card {{
         background: {card_bg};
         backdrop-filter: blur(12px);
@@ -91,7 +127,7 @@ st.markdown(f"""
         padding: 60px 20px;
         text-align: center;
         max-width: 500px;
-        margin: 40px auto;
+        margin: 60px auto;
         box-shadow: 0 20px 50px rgba(0,0,0,0.1);
     }}
     
@@ -102,14 +138,14 @@ st.markdown(f"""
         100% {{ transform: scale(1); opacity: 0.9; }}
     }}
     
-    .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; }}
+    .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; margin-bottom: 10px; }}
     .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
-    #MainMenu, footer, header {{visibility: hidden;}}
+    footer {{ visibility: hidden !important; }}
     </style>
     """, unsafe_allow_html=True)
 
-# --- 5. UI ---
+# --- 5. UI LAYOUT ---
 st.markdown(f"""
     <div class="glass-card">
         <div class="icon-div">{icon}</div>
@@ -118,14 +154,14 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# Progress Bar
+# Progress Bar (Last 2 hours before wake-up)
 if (wake_s - 2.0) <= decimal_time < wake_s:
     cols = st.columns([1, 4, 1])
     with cols[1]:
         progress = (decimal_time - (wake_s - 2.0)) / 2.0
         st.progress(min(max(progress, 0.0), 1.0))
 
-# --- 6. REFRESH ---
+# --- 6. AUTO-REFRESH ---
 if not manual_mode:
     time.sleep(5)
     st.rerun()
