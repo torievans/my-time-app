@@ -41,13 +41,11 @@ if manual_mode:
     decimal_time = st.sidebar.slider("Test Time", 0.0, 23.9, float(hour + minute/60))
     h_24 = int(decimal_time)
     m = int((decimal_time % 1) * 60)
-    # Convert 24h to 12h without leading zero and without am/pm
     h_12 = h_24 % 12
     h_12 = 12 if h_12 == 0 else h_12
     current_time_string = f"{h_12}.{m:02d}"
 else:
     decimal_time = hour + (minute / 60)
-    # %-I removes leading zero, . replaces :
     current_time_string = now.strftime("%-I.%M")
 
 # --- 3. LOGIC ---
@@ -65,7 +63,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS ---
+# --- 4. CSS (NO LOADING ICONS) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -73,31 +71,25 @@ st.markdown(f"""
     .stApp {{
         background: {bg_gradient};
         font-family: 'Inter', sans-serif;
-        transition: background 3s ease-in-out;
     }}
-    
-    /* 1. THE SIDEBAR BUTTON */
-    /* We make it visible and ensure it sits on top of everything */
+
+    /* --- THE CLEANUP --- */
+    /* This kills the 'Running' wheelchair icon and the status bar */
+    [data-testid="stStatusWidget"], .stStatusWidget, [data-testid="stToolbar"] {{
+        visibility: hidden !important;
+        display: none !important;
+    }}
+
+    /* Hides the 'Running...' toast notification at the bottom */
+    [data-testid="stNotification"] {{
+        display: none !important;
+    }}
+
+    /* Sidebar button - simple and visible */
     [data-testid="stSidebarCollapseButton"] {{
         background-color: rgba(255,255,255,0.2) !important;
         border-radius: 50%;
         color: white !important;
-        position: fixed !important;
-        top: 15px !important;
-        left: 15px !important;
-        z-index: 99999;
-        display: flex !important;
-    }}
-
-    /* 2. THE HEADER CLEANUP */
-    /* We hide the right-side icons but keep the header area active for the button */
-    [data-testid="stHeaderActionElements"], .stDeployButton {{
-        display: none !important;
-    }}
-    
-    header {{
-        background-color: transparent !important;
-        border: none !important;
     }}
 
     .glass-card {{
@@ -113,19 +105,14 @@ st.markdown(f"""
         box-shadow: 0 20px 50px rgba(0,0,0,0.1);
     }}
     
-    .icon-div {{ font-size: 100px; margin-bottom: 20px; animation: pulse 4s infinite ease-in-out; }}
-    @keyframes pulse {{
-        0% {{ transform: scale(1); opacity: 0.9; }}
-        50% {{ transform: scale(1.05); opacity: 1; }}
-        100% {{ transform: scale(1); opacity: 0.9; }}
-    }}
-    
+    .icon-div {{ font-size: 100px; margin-bottom: 20px; }}
     .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; }}
     .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
-    #MainMenu, footer {{visibility: hidden;}}
+    footer {{visibility: hidden !important;}}
     </style>
     """, unsafe_allow_html=True)
+
 # --- 5. UI ---
 st.markdown(f"""
     <div class="glass-card">
@@ -134,13 +121,6 @@ st.markdown(f"""
         {"<div class='clock-label'>" + current_time_string + "</div>" if show_clock else ""}
     </div>
     """, unsafe_allow_html=True)
-
-# Progress Bar
-if (wake_s - 2.0) <= decimal_time < wake_s:
-    cols = st.columns([1, 4, 1])
-    with cols[1]:
-        progress = (decimal_time - (wake_s - 2.0)) / 2.0
-        st.progress(min(max(progress, 0.0), 1.0))
 
 # --- 6. REFRESH ---
 if not manual_mode:
