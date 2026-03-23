@@ -6,34 +6,49 @@ import time
 # --- 1. SETUP & TIMEZONE ---
 tz = pytz.timezone('Europe/London')
 now = datetime.now(tz)
-curr_s = now.hour + (now.minute / 60)
+hour = now.hour
+minute = now.minute
 
-# --- 2. SIDEBAR SETTINGS ---
-st.sidebar.header("⚙️ Settings")
-sleep_start_i = st.sidebar.time_input("Sleep Time", dt_time(19, 0)) # Default 7pm
-wake_up_i = st.sidebar.time_input("Wake Time", dt_time(7, 0))     # Default 7am
+# --- 2. SIDEBAR SETTINGS (The "Control Panel") ---
+st.sidebar.header("⚙️ App Settings")
+sleep_start_i = st.sidebar.time_input("Sleep Time Starts", dt_time(19, 0))
+wake_up_i = st.sidebar.time_input("Wake Time Starts", dt_time(7, 0))
 show_clock = st.sidebar.checkbox("Show Digital Clock", value=True)
 
-# --- 3. LOGIC & TRANSPOSED THEME ---
+st.sidebar.markdown("---")
+st.sidebar.header("🛠️ Developer Tools")
+manual_mode = st.sidebar.checkbox("Manual Time Override (Preview)")
+
+# Determine the time to display
+if manual_mode:
+    # This is your "Preview" slider
+    decimal_time = st.sidebar.slider("Test Time of Day", 0.0, 23.9, float(hour + minute/60))
+    # Create a fake 'now' object for the manual time so the clock shows the test time
+    display_hour = int(decimal_time)
+    display_min = int((decimal_time % 1) * 60)
+    current_time_string = f"{display_hour:02d}:{display_min:02d}"
+else:
+    decimal_time = hour + (minute / 60)
+    current_time_string = now.strftime("%H:%M")
+
+# --- 3. LOGIC ---
 sleep_s = sleep_start_i.hour + (sleep_start_i.minute / 60)
 wake_s = wake_up_i.hour + (wake_up_i.minute / 60)
 
-if curr_s >= sleep_s or curr_s < wake_s:
-    # Night Palette (Indigo/Slate from Lovable)
+if decimal_time >= sleep_s or decimal_time < wake_s:
     status, icon = "Sleepy Time", "🌙"
     bg_gradient = "linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)"
     card_bg = "rgba(30, 27, 75, 0.4)"
-    accent_color = "#818cf8" # Indigo 400
+    accent_color = "#818cf8" 
     text_color = "#e0e7ff"
 else:
-    # Day Palette (Amber/Yellow from Lovable)
     status, icon = "Rise & Shine!", "☀️"
     bg_gradient = "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)"
     card_bg = "rgba(255, 255, 255, 0.6)"
-    accent_color = "#d97706" # Amber 600
+    accent_color = "#d97706" 
     text_color = "#78350f"
 
-# --- 4. CSS TRANSPOSED FROM LOVABLE (Tailwind-like styles) ---
+# --- 4. CSS (Transposed Design) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -44,7 +59,6 @@ st.markdown(f"""
         transition: background 3s ease-in-out;
     }}
     
-    /* The Glass Card */
     .glass-card {{
         background: {card_bg};
         backdrop-filter: blur(12px);
@@ -54,11 +68,10 @@ st.markdown(f"""
         padding: 60px 20px;
         text-align: center;
         max-width: 500px;
-        margin: 80px auto;
+        margin: 40px auto;
         box-shadow: 0 20px 50px rgba(0,0,0,0.1);
     }}
     
-    /* Animated Icon */
     .icon-div {{
         font-size: 100px;
         margin-bottom: 20px;
@@ -67,7 +80,7 @@ st.markdown(f"""
     
     @keyframes pulse {{
         0% {{ transform: scale(1); opacity: 0.9; }}
-        50% {{ transform: scale(1.1); opacity: 1; }}
+        50% {{ transform: scale(1.05); opacity: 1; }}
         100% {{ transform: scale(1); opacity: 0.9; }}
     }}
     
@@ -80,13 +93,12 @@ st.markdown(f"""
     }}
     
     .clock-label {{
-        font-size: 20px;
+        font-size: 24px;
         font-weight: 400;
         color: {text_color};
-        opacity: 0.7;
+        opacity: 0.8;
     }}
 
-    /* Hide Streamlit elements for a cleaner UI */
     #MainMenu, footer, header {{visibility: hidden;}}
     </style>
     """, unsafe_allow_html=True)
@@ -96,18 +108,19 @@ st.markdown(f"""
     <div class="glass-card">
         <div class="icon-div">{icon}</div>
         <div class="status-label">{status}</div>
-        {"<div class='clock-label'>" + now.strftime("%H:%M") + "</div>" if show_clock else ""}
+        {"<div class='clock-label'>" + current_time_string + "</div>" if show_clock else ""}
     </div>
     """, unsafe_allow_html=True)
 
-# Progress Bar (Last 2 hours of sleep)
-if (wake_s - 2.0) <= curr_s < wake_s:
+# Progress Bar (Last 2 hours before wake-up)
+if (wake_s - 2.0) <= decimal_time < wake_s:
     cols = st.columns([1, 4, 1])
     with cols[1]:
-        progress = (curr_s - (wake_s - 2.0)) / 2.0
+        progress = (decimal_time - (wake_s - 2.0)) / 2.0
         st.progress(min(max(progress, 0.0), 1.0))
-        st.markdown(f"<p style='text-align:center; color:{text_color}; font-size:14px;'>Morning is almost here...</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align:center; color:{text_color}; font-size:14px; opacity:0.8;'>Morning is almost here...</p>", unsafe_allow_html=True)
 
 # --- 6. LIVE REFRESH ---
-time.sleep(5)
-st.rerun()
+if not manual_mode:
+    time.sleep(5)
+    st.rerun()
