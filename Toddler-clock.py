@@ -72,7 +72,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS (Universal Sidebar Fix & Header Cleanup) ---
+# --- 4. CSS (Teleporting Sidebar Button) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -83,18 +83,18 @@ st.markdown(f"""
         transition: background 3s ease-in-out;
     }}
 
-    /* 1. THE AGGRESSIVE HEADER CLEANUP */
-    /* This hides the entire top-right block (Fork, GitHub, Deploy, etc.) */
-    [data-testid="stHeaderActionElements"], 
-    .stDeployButton, 
-    [data-testid="stToolbar"] {{
-        display: none !important;
+    /* 1. HIDE THE HEADER COMPLETELY */
+    /* This removes the GitHub/Fork/Menu bar entirely */
+    header[data-testid="stHeader"] {{
         visibility: hidden !important;
+        background: transparent !important;
     }}
 
-    /* 2. THE PARENT CONTROLS BUTTON (Forced Visibility) */
-    /* We detach it from the header and float it in the top-left */
+    /* 2. TELEPORT THE SIDEBAR BUTTON */
+    /* We find the button INSIDE the hidden header and force it to be visible & fixed */
     [data-testid="stSidebarCollapseButton"] {{
+        visibility: visible !important;
+        display: flex !important;
         position: fixed !important;
         top: 20px !important;
         left: 20px !important;
@@ -105,9 +105,13 @@ st.markdown(f"""
         height: 48px !important;
         color: white !important;
         z-index: 999999 !important;
-        display: flex !important;
-        visibility: visible !important;
         box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+    }}
+
+    /* Make the arrow icon inside the button bright white */
+    [data-testid="stSidebarCollapseButton"] svg {{
+        fill: white !important;
+        color: white !important;
     }}
 
     /* 3. MAIN CARD STYLING */
@@ -134,8 +138,6 @@ st.markdown(f"""
     .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; margin-bottom: 10px; }}
     .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
-    /* Hide the default Streamlit background and footer */
-    header {{ background: transparent !important; }}
     footer {{ visibility: hidden !important; }}
     </style>
     """, unsafe_allow_html=True)
