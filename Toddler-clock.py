@@ -4,6 +4,7 @@ import pytz
 import time
 
 # --- 0. PAGE CONFIG ---
+# "expanded" forces it open on the first load of a session
 st.set_page_config(
     page_title="Toddler Clock",
     initial_sidebar_state="expanded"
@@ -41,15 +42,12 @@ if manual_mode:
     decimal_time = st.sidebar.slider("Test Time", 0.0, 23.9, float(hour + minute/60))
     h_24 = int(decimal_time)
     m = int((decimal_time % 1) * 60)
-    # Convert 24h to 12h without leading zero
     h_12 = h_24 % 12
     h_12 = 12 if h_12 == 0 else h_12
-    am_pm = "am" if h_24 < 12 else "pm"
-    current_time_string = f"{h_12}.{m:02d} {am_pm}"
+    current_time_string = f"{h_12}.{m:02d}"
 else:
     decimal_time = hour + (minute / 60)
-    # %-I removes the leading zero, . replaces :, %p is AM/PM (lowered to am/pm)
-    current_time_string = now.strftime("%-I.%M %p").lower()
+    current_time_string = now.strftime("%-I.%M")
 
 # --- 3. LOGIC ---
 sleep_s = sleep_start_i.hour + (sleep_start_i.minute / 60)
@@ -66,7 +64,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS ---
+# --- 4. CSS (Corrected to keep button alive) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -77,10 +75,25 @@ st.markdown(f"""
         transition: background 3s ease-in-out;
     }}
     
+    /* STYLE THE BUTTON - Keep it visible but floating */
     [data-testid="stSidebarCollapseButton"] {{
         background-color: rgba(255,255,255,0.2) !important;
-        border-radius: 50%;
+        border-radius: 50% !important;
         color: white !important;
+        position: fixed !important;
+        top: 15px !important;
+        left: 15px !important;
+        z-index: 99999;
+    }}
+
+    /* HIDE THE JUNK BUT NOT THE HEADER ITSELF */
+    [data-testid="stHeaderActionElements"], .stDeployButton {{
+        display: none !important;
+    }}
+
+    header {{
+        background: transparent !important;
+        color: transparent !important;
     }}
 
     .glass-card {{
@@ -104,9 +117,9 @@ st.markdown(f"""
     }}
     
     .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; }}
-    .clock-label {{ font-size: 24px; color: {text_color}; opacity: 0.8; }}
+    .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
-    #MainMenu, footer, header {{visibility: hidden;}}
+    footer {{visibility: hidden;}}
     </style>
     """, unsafe_allow_html=True)
 
