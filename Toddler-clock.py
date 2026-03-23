@@ -13,36 +13,31 @@ st.set_page_config(
 # --- 1. SIDEBAR SETTINGS (Parent Control Panel) ---
 st.sidebar.header("🌍 Location Settings")
 
-# 1a. Timezone Selection
-all_timezones = pytz.all_timezones
-# Added Barcelona here as requested!
-favorites = ['Europe/Barcelona', 'Europe/London', 'America/New_York', 'Europe/Paris']
-remaining_tz = [tz for tz in all_timezones if tz not in favorites]
-final_tz_list = favorites + remaining_tz
+# Get the clean list of all world timezones
+all_tz = pytz.all_timezones
+
+# We find where Barcelona is in the list so we can set it as default
+try:
+    default_index = all_tz.index('Europe/Barcelona')
+except ValueError:
+    default_index = 0 # Fallback if for some reason it's not found
 
 selected_tz = st.sidebar.selectbox(
     "Select your Timezone",
-    options=final_tz_list,
-    index=0  # This makes Barcelona the default starting option
+    options=all_tz,
+    index=default_index
 )
 
 # --- 2. SETUP TIME BASED ON SELECTION ---
-tz = pytz.timezone(selected_tz)
+# We use a try/except block here to prevent the red error screen
+try:
+    tz = pytz.timezone(selected_tz)
+except Exception:
+    tz = pytz.timezone('UTC') # Ultimate fallback to prevent crashing
+
 now = datetime.now(tz)
 hour = now.hour
 minute = now.minute
-
-st.sidebar.markdown("---")
-st.sidebar.header("⏰ Schedule Settings")
-
-# 1b. Sleep/Wake Inputs
-sleep_start_i = st.sidebar.time_input("Sleep Time Starts", dt_time(19, 0))
-wake_up_i = st.sidebar.time_input("Wake Time Starts", dt_time(7, 0))
-show_clock = st.sidebar.checkbox("Show Digital Clock", value=True)
-
-st.sidebar.markdown("---")
-st.sidebar.header("🛠️ Developer Tools")
-manual_mode = st.sidebar.checkbox("Manual Time Override (Preview)")
 
 # --- 3. TIME CALCULATION ---
 if manual_mode:
