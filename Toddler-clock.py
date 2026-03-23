@@ -1,3 +1,16 @@
+# --- DEBUGGER SECTION ---
+# Add a checkbox in the sidebar to enable "Manual Mode"
+st.sidebar.header("Developer Tools")
+manual_mode = st.sidebar.checkbox("Manual Time Override")
+
+if manual_mode:
+    # A slider from 0.0 (Midnight) to 23.9 (11:59 PM)
+    decimal_time = st.sidebar.slider("Test Time", 0.0, 23.9, float(now.hour + now.minute/60))
+    st.sidebar.warning(f"Currently viewing app at: {int(decimal_time)}:{int((decimal_time%1)*60):02d}")
+else:
+    # Use the real time if manual mode is OFF
+    decimal_time = hour + (minute / 60)
+# -------------------------
 import streamlit as st
 from datetime import datetime
 import pytz
