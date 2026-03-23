@@ -51,6 +51,7 @@ else:
     text_color = "#78350f"
 
 # --- 4. CSS ---
+# --- 4. CSS (Corrected to show the sidebar button) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -60,12 +61,23 @@ st.markdown(f"""
         font-family: 'Inter', sans-serif;
         transition: background 3s ease-in-out;
     }}
-    
-    /* Make the Sidebar toggle button visible against dark backgrounds */
+
+    /* --- SIDEBAR BUTTON FIX --- */
+    /* This ensures the ">" arrow is visible and clickable */
     [data-testid="stSidebarCollapseButton"] {{
-        background-color: rgba(255,255,255,0.2);
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background-color: rgba(255, 255, 255, 0.2) !important;
         border-radius: 50%;
         color: white !important;
+        z-index: 999999;
+        display: block !important;
+    }}
+    
+    /* Hover effect for the button */
+    [data-testid="stSidebarCollapseButton"]:hover {{
+        background-color: rgba(255, 255, 255, 0.4) !important;
     }}
 
     .glass-card {{
@@ -107,7 +119,9 @@ st.markdown(f"""
         opacity: 0.8;
     }}
 
-    #MainMenu, footer, header {{visibility: hidden;}}
+    /* Hide the rest of the junk but keep the app functional */
+    footer {{visibility: hidden;}}
+    header {{background-color: transparent !important;}}
     </style>
     """, unsafe_allow_html=True)
 
