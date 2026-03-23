@@ -63,51 +63,70 @@ else:
     text_color = "#78350f"
     card_bg = "rgba(255, 255, 255, 0.4)"
 
-# --- 4. CSS ---
+# --- 4. CSS (Size Zero Cleanup) ---
 st.markdown(f"""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    
     .stApp {{
         background-color: {bg_color};
         color: {text_color};
+        font-family: 'Inter', sans-serif;
     }}
 
-    /* Matches header to background to hide text */
-    header[data-testid="stHeader"] {{
-        background-color: {bg_color} !important;
-    }}
-
-    /* Floating parent control button */
-    [data-testid="stSidebarCollapseButton"] {{
-        color: white !important;
-        background-color: rgba(255,255,255,0.2) !important;
-        border-radius: 50%;
-        position: fixed;
-        top: 15px;
-        left: 15px;
-        z-index: 9999;
-    }}
-
-    /* Make top-right elements fully transparent */
-    [data-testid="stHeaderActionElements"], .stDeployButton {{
+    /* --- 1. THE SIZE-ZERO STRIKE --- */
+    /* Instead of just hiding, we shrink these to non-existence */
+    [data-testid="stHeaderActionElements"], 
+    .stDeployButton, 
+    [data-testid="stToolbar"] {{
+        width: 0px !important;
+        height: 0px !important;
+        overflow: hidden !important;
+        display: none !important;
+        visibility: hidden !important;
         opacity: 0 !important;
+    }}
+
+    /* --- 2. THE FLOATING SIDEBAR BUTTON --- */
+    /* We explicitly define its size so it doesn't get shrunk by the rule above */
+    [data-testid="stSidebarCollapseButton"] {{
+        position: fixed !important;
+        top: 15px !important;
+        left: 15px !important;
+        width: 45px !important;
+        height: 45px !important;
+        background-color: rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        border-radius: 50% !important;
+        color: white !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }}
+
+    /* --- 3. GLASS CARD & UI --- */
+    header[data-testid="stHeader"] {{
+        background: transparent !important;
     }}
 
     .glass-card {{
         background: {card_bg};
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border-radius: 24px;
         padding: 60px 20px;
         text-align: center;
         max-width: 500px;
-        margin: 80px auto 40px auto; /* More top margin for phones */
-        border: 1px solid rgba(255,255,255,0.2);
+        margin: 80px auto;
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }}
-
+    
     .icon-div {{ font-size: 100px; margin-bottom: 20px; }}
-    .status-label {{ font-size: 42px; font-weight: 700; }}
-    .clock-label {{ font-size: 32px; opacity: 0.8; }}
+    .status-label {{ font-size: 42px; font-weight: 700; margin-bottom: 10px; }}
+    .clock-label {{ font-size: 32px; opacity: 0.8; font-weight: 400; }}
 
-    footer {{visibility: hidden !important;}}
+    footer {{ visibility: hidden !important; }}
     </style>
     """, unsafe_allow_html=True)
 
