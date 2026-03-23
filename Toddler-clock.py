@@ -65,7 +65,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS ---
+# --- 4. CSS (Home Screen / Full Screen Optimization) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -73,57 +73,50 @@ st.markdown(f"""
     .stApp {{
         background: {bg_gradient};
         font-family: 'Inter', sans-serif;
-        transition: background 3s ease-in-out;
-    }}
-    
-    /* 1. THE SIDEBAR BUTTON */
-    /* We make it visible and ensure it sits on top of everything */
-    [data-testid="stSidebarCollapseButton"] {{
-        background-color: rgba(255,255,255,0.2) !important;
-        border-radius: 50%;
-        color: white !important;
-        position: fixed !important;
-        top: 15px !important;
-        left: 15px !important;
-        z-index: 99999;
-        display: flex !important;
     }}
 
-    /* 2. THE HEADER CLEANUP */
-    /* We hide the right-side icons but keep the header area active for the button */
+    /* --- THE UNSTICK FIX --- */
+    /* This stops the header from staying at the top when you scroll */
+    header[data-testid="stHeader"] {{
+        position: absolute !important;
+        background: transparent !important;
+    }}
+
+    /* Hide the GitHub/Fork icons specifically */
     [data-testid="stHeaderActionElements"], .stDeployButton {{
         display: none !important;
     }}
-    
-    header {{
-        background-color: transparent !important;
-        border: none !important;
+
+    /* SIDEBAR BUTTON (Floating & Always Visible) */
+    [data-testid="stSidebarCollapseButton"] {{
+        position: fixed !important;
+        top: 15px !important;
+        left: 15px !important;
+        background-color: rgba(255,255,255,0.2) !important;
+        border-radius: 50%;
+        color: white !important;
+        z-index: 99999;
     }}
 
+    /* OPTIMIZED CARD FOR PHONES */
     .glass-card {{
         background: {card_bg};
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 24px;
-        padding: 60px 20px;
+        padding: 80px 20px;
         text-align: center;
-        max-width: 500px;
-        margin: 40px auto;
+        max-width: 95%; /* Stretch nearly to the edges */
+        margin: 20px auto; /* Reduced top margin */
         box-shadow: 0 20px 50px rgba(0,0,0,0.1);
     }}
     
-    .icon-div {{ font-size: 100px; margin-bottom: 20px; animation: pulse 4s infinite ease-in-out; }}
-    @keyframes pulse {{
-        0% {{ transform: scale(1); opacity: 0.9; }}
-        50% {{ transform: scale(1.05); opacity: 1; }}
-        100% {{ transform: scale(1); opacity: 0.9; }}
-    }}
-    
-    .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; }}
-    .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
+    .icon-div {{ font-size: 120px; margin-bottom: 20px; }}
+    .status-label {{ font-size: 48px; font-weight: 700; color: {text_color}; }}
+    .clock-label {{ font-size: 36px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
-    #MainMenu, footer {{visibility: hidden;}}
+    footer {{visibility: hidden !important;}}
     </style>
     """, unsafe_allow_html=True)
 
