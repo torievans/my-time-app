@@ -3,13 +3,20 @@ from datetime import datetime, time as dt_time
 import pytz
 import time
 
+# --- 0. PREVENT SIDEBAR FROM HIDING ---
+# This MUST be the first streamlit command
+st.set_page_config(
+    page_title="Toddler Clock",
+    initial_sidebar_state="expanded" 
+)
+
 # --- 1. SETUP & TIMEZONE ---
 tz = pytz.timezone('Europe/London')
 now = datetime.now(tz)
 hour = now.hour
 minute = now.minute
 
-# --- 2. SIDEBAR SETTINGS (The "Control Panel") ---
+# --- 2. SIDEBAR SETTINGS ---
 st.sidebar.header("⚙️ App Settings")
 sleep_start_i = st.sidebar.time_input("Sleep Time Starts", dt_time(19, 0))
 wake_up_i = st.sidebar.time_input("Wake Time Starts", dt_time(7, 0))
@@ -19,11 +26,8 @@ st.sidebar.markdown("---")
 st.sidebar.header("🛠️ Developer Tools")
 manual_mode = st.sidebar.checkbox("Manual Time Override (Preview)")
 
-# Determine the time to display
 if manual_mode:
-    # This is your "Preview" slider
     decimal_time = st.sidebar.slider("Test Time of Day", 0.0, 23.9, float(hour + minute/60))
-    # Create a fake 'now' object for the manual time so the clock shows the test time
     display_hour = int(decimal_time)
     display_min = int((decimal_time % 1) * 60)
     current_time_string = f"{display_hour:02d}:{display_min:02d}"
@@ -39,16 +43,14 @@ if decimal_time >= sleep_s or decimal_time < wake_s:
     status, icon = "Sleepy Time", "🌙"
     bg_gradient = "linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)"
     card_bg = "rgba(30, 27, 75, 0.4)"
-    accent_color = "#818cf8" 
     text_color = "#e0e7ff"
 else:
     status, icon = "Rise & Shine!", "☀️"
     bg_gradient = "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)"
     card_bg = "rgba(255, 255, 255, 0.6)"
-    accent_color = "#d97706" 
     text_color = "#78350f"
 
-# --- 4. CSS (Transposed Design) ---
+# --- 4. CSS ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -59,6 +61,13 @@ st.markdown(f"""
         transition: background 3s ease-in-out;
     }}
     
+    /* Make the Sidebar toggle button visible against dark backgrounds */
+    [data-testid="stSidebarCollapseButton"] {{
+        background-color: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        color: white !important;
+    }}
+
     .glass-card {{
         background: {card_bg};
         backdrop-filter: blur(12px);
@@ -94,7 +103,6 @@ st.markdown(f"""
     
     .clock-label {{
         font-size: 24px;
-        font-weight: 400;
         color: {text_color};
         opacity: 0.8;
     }}
