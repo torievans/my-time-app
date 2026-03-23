@@ -76,10 +76,28 @@ st.markdown(f"""
         transition: background 3s ease-in-out;
     }}
     
+    /* 1. THE SIDEBAR BUTTON */
+    /* We make it visible and ensure it sits on top of everything */
     [data-testid="stSidebarCollapseButton"] {{
         background-color: rgba(255,255,255,0.2) !important;
         border-radius: 50%;
         color: white !important;
+        position: fixed !important;
+        top: 15px !important;
+        left: 15px !important;
+        z-index: 99999;
+        display: flex !important;
+    }}
+
+    /* 2. THE HEADER CLEANUP */
+    /* We hide the right-side icons but keep the header area active for the button */
+    [data-testid="stHeaderActionElements"], .stDeployButton {{
+        display: none !important;
+    }}
+    
+    header {{
+        background-color: transparent !important;
+        border: none !important;
     }}
 
     .glass-card {{
@@ -105,7 +123,7 @@ st.markdown(f"""
     .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; }}
     .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
-    #MainMenu, footer, header {{visibility: hidden;}}
+    #MainMenu, footer {{visibility: hidden;}}
     </style>
     """, unsafe_allow_html=True)
 
