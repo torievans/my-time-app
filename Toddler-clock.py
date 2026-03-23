@@ -48,7 +48,7 @@ else:
     decimal_time = hour + (minute / 60)
     current_time_string = now.strftime("%-I.%M")
 
-# --- 3. LOGIC ---
+# --- 3. LOGIC & COLORS ---
 sleep_s = sleep_start_i.hour + (sleep_start_i.minute / 60)
 wake_s = wake_up_i.hour + (wake_up_i.minute / 60)
 
@@ -63,7 +63,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS (BUTTON RECOVERY) ---
+# --- 4. CSS (CLEAN BUT VISIBLE HEADER) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -71,26 +71,19 @@ st.markdown(f"""
     .stApp {{
         background: {bg_gradient};
         font-family: 'Inter', sans-serif;
+        transition: background 3s ease-in-out;
     }}
 
-    /* HIDE THE LOADING ICON BUT PROTECT THE SIDEBAR BUTTON */
-    /* We hide the 'Action Elements' on the right only */
-    [data-testid="stHeaderActionElements"], .stDeployButton {{
-        display: none !important;
+    /* Keep the header area clean but visible */
+    header[data-testid="stHeader"] {{
+        background: transparent !important;
     }}
 
-    /* REPOSITION SIDEBAR BUTTON BELOW YOUR CASE/HOLDER */
+    /* Simple Sidebar button styling */
     [data-testid="stSidebarCollapseButton"] {{
-        position: fixed !important;
-        top: 100px !important; /* Adjusted to sit below your physical frame */
-        left: 15px !important;
         background-color: rgba(255,255,255,0.2) !important;
-        border: 1px solid rgba(255,255,255,0.4) !important;
         border-radius: 50% !important;
         color: white !important;
-        z-index: 99999 !important;
-        display: flex !important;
-        visibility: visible !important;
     }}
 
     .glass-card {{
@@ -102,7 +95,7 @@ st.markdown(f"""
         padding: 60px 20px;
         text-align: center;
         max-width: 500px;
-        margin: 40px auto;
+        margin: 60px auto;
         box-shadow: 0 20px 50px rgba(0,0,0,0.1);
     }}
     
@@ -114,7 +107,7 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 5. UI ---
+# --- 5. UI LAYOUT ---
 st.markdown(f"""
     <div class="glass-card">
         <div class="icon-div">{icon}</div>
@@ -123,7 +116,14 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# --- 6. REFRESH ---
+# Progress Bar (Last 2 hours before wake-up)
+if (wake_s - 2.0) <= decimal_time < wake_s:
+    cols = st.columns([1, 4, 1])
+    with cols[1]:
+        progress = (decimal_time - (wake_s - 2.0)) / 2.0
+        st.progress(min(max(progress, 0.0), 1.0))
+
+# --- 6. AUTO-REFRESH ---
 if not manual_mode:
     time.sleep(5)
     st.rerun()
