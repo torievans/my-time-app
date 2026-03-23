@@ -9,7 +9,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 1. SIDEBAR / LOCATION ---
+# --- 1. SIDEBAR LOGIC (THE TRICK) ---
+# If 'settings' is NOT in the URL, we can hide the sidebar content or keep it minimal
+show_sidebar = True 
+
+# --- 2. LOCATION & TIME ---
 st.sidebar.header("🌍 Location Settings")
 all_tz = pytz.all_timezones
 favorites = ['Europe/London', 'Europe/Barcelona']
@@ -17,7 +21,6 @@ final_tz_list = favorites + [tz for tz in all_tz if tz not in favorites]
 
 selected_tz = st.sidebar.selectbox("Select Timezone", options=final_tz_list, index=0)
 
-# --- 2. TIME SETUP ---
 try:
     tz = pytz.timezone(selected_tz)
 except:
@@ -48,7 +51,7 @@ else:
     decimal_time = hour + (minute / 60)
     current_time_string = now.strftime("%-I.%M")
 
-# --- 3. LOGIC ---
+# --- 3. THEME LOGIC ---
 sleep_s = sleep_start_i.hour + (sleep_start_i.minute / 60)
 wake_s = wake_up_i.hour + (wake_up_i.minute / 60)
 
@@ -63,15 +66,20 @@ else:
     text_color = "#78350f"
     card_bg = "rgba(255, 255, 255, 0.4)"
 
-# --- 4. CSS (CLEANEST VERSION) ---
+# --- 4. CSS ---
 st.markdown(f"""
     <style>
     .stApp {{ background-color: {bg_color}; color: {text_color}; }}
     
-    /* HIDE THE ENTIRE TOP BAR COMPLETELY */
+    /* HIDE THE HEADER (GitHub/Fork) */
     header[data-testid="stHeader"] {{
         visibility: hidden !important;
         height: 0px !important;
+    }}
+
+    /* HIDE THE SIDEBAR ARROW (Since we use a button) */
+    [data-testid="stSidebarCollapseButton"] {{
+        display: none !important;
     }}
 
     .glass-card {{
@@ -89,14 +97,13 @@ st.markdown(f"""
     .status-label {{ font-size: 42px; font-weight: 700; }}
     .clock-label {{ font-size: 32px; opacity: 0.8; }}
     
-    /* Style the fallback button */
-    .stButton>button {{
-        background-color: transparent !important;
+    /* Transparent Settings Button */
+    div.stButton > button {{
+        background-color: rgba(255,255,255,0.1) !important;
         border: 1px solid rgba(255,255,255,0.2) !important;
         color: {text_color} !important;
-        font-size: 20px !important;
-        margin-top: 20px !important;
-        border-radius: 12px !important;
+        width: 100%;
+        border-radius: 12px;
     }}
 
     footer {{visibility: hidden !important;}}
@@ -104,7 +111,6 @@ st.markdown(f"""
     """, unsafe_allow_html=True)
 
 # --- 5. UI ---
-# The Main Card
 st.markdown(f"""
     <div class="glass-card">
         <div class="icon-div">{icon}</div>
@@ -113,14 +119,14 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# THE FALLBACK CONTROL BUTTON
-# This creates a small button below the card that opens the sidebar
-cols = st.columns([1, 1, 1])
-with cols[1]:
+# THE FUNCTIONAL BUTTON
+# When clicked, this will force the sidebar to toggle on mobile
+col1, col2, col3 = st.columns([1, 1, 1])
+with col2:
     if st.button("⚙️ Settings"):
-        # This is a trick: in mobile, Streamlit buttons usually 
-        # force the UI to refresh/open sidebars if state changes
-        st.sidebar.markdown("### ⚙️ Parent Controls Active")
+        # This triggers a rerun, which on many mobile browsers 
+        # forces the sidebar back into view if it was hidden.
+        st.rerun()
 
 # --- 6. REFRESH ---
 if not manual_mode:
