@@ -65,29 +65,27 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS (Home Screen / Full Screen Optimization) ---
+# --- 4. CSS (Deep Unlock - Hidden Header) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
     
+    /* 1. UNLOCK THE APP CONTAINER */
     .stApp {{
         background: {bg_gradient};
         font-family: 'Inter', sans-serif;
+        overflow-y: auto !important; /* Allow the page to scroll */
     }}
 
-    /* --- THE UNSTICK FIX --- */
-    /* This stops the header from staying at the top when you scroll */
+    /* 2. HIDE HEADER BEHIND BACKGROUND */
     header[data-testid="stHeader"] {{
         position: absolute !important;
+        z-index: -1 !important; /* Push it behind the background color */
         background: transparent !important;
+        border: none !important;
     }}
 
-    /* Hide the GitHub/Fork icons specifically */
-    [data-testid="stHeaderActionElements"], .stDeployButton {{
-        display: none !important;
-    }}
-
-    /* SIDEBAR BUTTON (Floating & Always Visible) */
+    /* 3. SIDEBAR BUTTON (Pinned to screen) */
     [data-testid="stSidebarCollapseButton"] {{
         position: fixed !important;
         top: 15px !important;
@@ -95,10 +93,10 @@ st.markdown(f"""
         background-color: rgba(255,255,255,0.2) !important;
         border-radius: 50%;
         color: white !important;
-        z-index: 99999;
+        z-index: 99999 !important; /* Keep this on top of everything */
     }}
 
-    /* OPTIMIZED CARD FOR PHONES */
+    /* 4. THE SUN/MOON CARD */
     .glass-card {{
         background: {card_bg};
         backdrop-filter: blur(12px);
@@ -107,8 +105,8 @@ st.markdown(f"""
         border-radius: 24px;
         padding: 80px 20px;
         text-align: center;
-        max-width: 95%; /* Stretch nearly to the edges */
-        margin: 20px auto; /* Reduced top margin */
+        max-width: 95%;
+        margin: 40px auto; /* Margin to ensure space at the top */
         box-shadow: 0 20px 50px rgba(0,0,0,0.1);
     }}
     
@@ -116,7 +114,10 @@ st.markdown(f"""
     .status-label {{ font-size: 48px; font-weight: 700; color: {text_color}; }}
     .clock-label {{ font-size: 36px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
-    footer {{visibility: hidden !important;}}
+    footer, [data-testid="stHeaderActionElements"] {{
+        visibility: hidden !important;
+        display: none !important;
+    }}
     </style>
     """, unsafe_allow_html=True)
 
