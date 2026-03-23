@@ -72,7 +72,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS (Corrected Header Cleanup) ---
+# --- 4. CSS (Universal Sidebar Fix & Header Cleanup) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -83,30 +83,31 @@ st.markdown(f"""
         transition: background 3s ease-in-out;
     }}
 
-    /* 1. HIDE ONLY THE RIGHT-SIDE ICONS (Fork, GitHub, Deploy) */
-    /* We leave the left side of the header alone so the button stays */
-    [data-testid="stHeaderActionElements"], .stDeployButton {{
+    /* 1. THE AGGRESSIVE HEADER CLEANUP */
+    /* This hides the entire top-right block (Fork, GitHub, Deploy, etc.) */
+    [data-testid="stHeaderActionElements"], 
+    .stDeployButton, 
+    [data-testid="stToolbar"] {{
         display: none !important;
         visibility: hidden !important;
     }}
 
-    /* 2. THE PARENT CONTROLS BUTTON STYLE */
-    /* We make it a floating circular button so it's easy to tap */
+    /* 2. THE PARENT CONTROLS BUTTON (Forced Visibility) */
+    /* We detach it from the header and float it in the top-left */
     [data-testid="stSidebarCollapseButton"] {{
         position: fixed !important;
-        top: 15px !important;
-        left: 15px !important;
+        top: 20px !important;
+        left: 20px !important;
         background-color: rgba(255, 255, 255, 0.2) !important;
         border: 1px solid rgba(255, 255, 255, 0.4) !important;
         border-radius: 50% !important;
-        width: 45px !important;
-        height: 45px !important;
+        width: 48px !important;
+        height: 48px !important;
         color: white !important;
         z-index: 999999 !important;
         display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+        visibility: visible !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
     }}
 
     /* 3. MAIN CARD STYLING */
@@ -133,7 +134,7 @@ st.markdown(f"""
     .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; margin-bottom: 10px; }}
     .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
-    /* Keep the header background clear so it doesn't block the card */
+    /* Hide the default Streamlit background and footer */
     header {{ background: transparent !important; }}
     footer {{ visibility: hidden !important; }}
     </style>
