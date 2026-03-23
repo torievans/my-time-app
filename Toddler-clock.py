@@ -41,15 +41,14 @@ if manual_mode:
     decimal_time = st.sidebar.slider("Test Time", 0.0, 23.9, float(hour + minute/60))
     h_24 = int(decimal_time)
     m = int((decimal_time % 1) * 60)
-    # Convert 24h to 12h without leading zero
+    # Convert 24h to 12h without leading zero and without am/pm
     h_12 = h_24 % 12
     h_12 = 12 if h_12 == 0 else h_12
-    am_pm = "am" if h_24 < 12 else "pm"
-    current_time_string = f"{h_12}.{m:02d} {am_pm}"
+    current_time_string = f"{h_12}.{m:02d}"
 else:
     decimal_time = hour + (minute / 60)
-    # %-I removes the leading zero, . replaces :, %p is AM/PM (lowered to am/pm)
-    current_time_string = now.strftime("%-I.%M %p").lower()
+    # %-I removes leading zero, . replaces :
+    current_time_string = now.strftime("%-I.%M")
 
 # --- 3. LOGIC ---
 sleep_s = sleep_start_i.hour + (sleep_start_i.minute / 60)
@@ -104,7 +103,7 @@ st.markdown(f"""
     }}
     
     .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; }}
-    .clock-label {{ font-size: 24px; color: {text_color}; opacity: 0.8; }}
+    .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
     #MainMenu, footer, header {{visibility: hidden;}}
     </style>
