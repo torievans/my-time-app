@@ -72,7 +72,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS (TOTAL UI CLEANUP) ---
+# --- 4. CSS (Corrected Header Cleanup) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -83,41 +83,33 @@ st.markdown(f"""
         transition: background 3s ease-in-out;
     }}
 
-    /* HIDE TOP-RIGHT GITHUB/FORK/MENU (Mobile & Desktop) */
-    [data-testid="stHeaderActionElements"], 
-    .stDeployButton, 
-    [data-testid="stToolbar"],
-    header {{
+    /* 1. HIDE ONLY THE RIGHT-SIDE ICONS (Fork, GitHub, Deploy) */
+    /* We leave the left side of the header alone so the button stays */
+    [data-testid="stHeaderActionElements"], .stDeployButton {{
         display: none !important;
         visibility: hidden !important;
     }}
 
-    /* DETACHED FLOATING SIDEBAR BUTTON */
+    /* 2. THE PARENT CONTROLS BUTTON STYLE */
+    /* We make it a floating circular button so it's easy to tap */
     [data-testid="stSidebarCollapseButton"] {{
         position: fixed !important;
-        top: 20px !important;
-        left: 20px !important;
+        top: 15px !important;
+        left: 15px !important;
         background-color: rgba(255, 255, 255, 0.2) !important;
         border: 1px solid rgba(255, 255, 255, 0.4) !important;
         border-radius: 50% !important;
-        width: 50px !important;
-        height: 50px !important;
+        width: 45px !important;
+        height: 45px !important;
         color: white !important;
         z-index: 999999 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        visibility: visible !important; /* Forces it to stay visible */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
     }}
 
-    /* Adjust SVG icon size inside the floating button */
-    [data-testid="stSidebarCollapseButton"] svg {{
-        width: 26px !important;
-        height: 26px !important;
-    }}
-
-    /* MAIN GLASS CARD */
+    /* 3. MAIN CARD STYLING */
     .glass-card {{
         background: {card_bg};
         backdrop-filter: blur(12px);
@@ -141,6 +133,8 @@ st.markdown(f"""
     .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; margin-bottom: 10px; }}
     .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
+    /* Keep the header background clear so it doesn't block the card */
+    header {{ background: transparent !important; }}
     footer {{ visibility: hidden !important; }}
     </style>
     """, unsafe_allow_html=True)
