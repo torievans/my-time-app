@@ -65,7 +65,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS (Clean & Developer Toolbar Hidden) ---
+# --- 4. CSS (Final UI Cleanup - Keeping Sidebar Button) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -76,12 +76,17 @@ st.markdown(f"""
         transition: background 3s ease-in-out;
     }}
 
-    /* Hides the Dev Toolbar (Share, Star, GitHub, etc.) */
-    [data-testid="stStatusWidget"], [data-testid="stToolbar"], .stDeployButton {{
+    /* Hides ONLY the right-side toolbar (Fork, GitHub, etc.) */
+    [data-testid="stHeaderActionElements"], .st-emotion-cache-199v05d, .stDeployButton {{
         display: none !important;
     }}
 
-    /* The "Parent Controls" Sidebar Button */
+    /* Ensure the Header background is invisible so it doesn't block the card */
+    header {{
+        background-color: transparent !important;
+    }}
+
+    /* The "Parent Controls" Sidebar Button - Styled to be visible */
     [data-testid="stSidebarCollapseButton"] {{
         position: fixed;
         top: 15px;
@@ -89,7 +94,7 @@ st.markdown(f"""
         background-color: rgba(255, 255, 255, 0.3) !important;
         border: 1px solid rgba(255, 255, 255, 0.5) !important;
         border-radius: 12px;
-        color: {text_color} !important;
+        color: white !important;
         z-index: 999999;
         display: flex !important;
     }}
@@ -117,8 +122,7 @@ st.markdown(f"""
     .status-label {{ font-size: 36px; font-weight: 700; color: {text_color}; }}
     .clock-label {{ font-size: 28px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
-    footer {{visibility: hidden;}}
-    header {{background: transparent !important;}}
+    footer {{visibility: hidden !important;}}
     </style>
     """, unsafe_allow_html=True)
 
