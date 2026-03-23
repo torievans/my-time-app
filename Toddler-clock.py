@@ -1,3 +1,8 @@
+import streamlit as st
+from datetime import datetime
+import pytz
+import time
+
 # --- DEBUGGER SECTION ---
 # Add a checkbox in the sidebar to enable "Manual Mode"
 st.sidebar.header("Developer Tools")
@@ -11,10 +16,6 @@ else:
     # Use the real time if manual mode is OFF
     decimal_time = hour + (minute / 60)
 # -------------------------
-import streamlit as st
-from datetime import datetime
-import pytz
-import time
 
 # 1. Setup Timezone (Change to your local zone, e.g., 'Europe/London')
 tz = pytz.timezone('Europe/London')
