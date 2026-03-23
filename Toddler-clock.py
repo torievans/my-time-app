@@ -4,7 +4,6 @@ import pytz
 import time
 
 # --- 0. PAGE CONFIG ---
-# Must be the very first Streamlit command.
 st.set_page_config(
     page_title="Toddler Clock",
     initial_sidebar_state="expanded"
@@ -12,17 +11,11 @@ st.set_page_config(
 
 # --- 1. SIDEBAR / LOCATION ---
 st.sidebar.header("🌍 Location Settings")
-
 all_tz = pytz.all_timezones
-# London first, Barcelona second
 favorites = ['Europe/London', 'Europe/Barcelona']
 final_tz_list = favorites + [tz for tz in all_tz if tz not in favorites]
 
-selected_tz = st.sidebar.selectbox(
-    "Select your Timezone",
-    options=final_tz_list,
-    index=0
-)
+selected_tz = st.sidebar.selectbox("Select your Timezone", options=final_tz_list, index=0)
 
 # --- 2. TIME SETUP ---
 try:
@@ -44,7 +37,6 @@ st.sidebar.markdown("---")
 st.sidebar.header("🛠️ Developer Tools")
 manual_mode = st.sidebar.checkbox("Manual Time Override (Preview)")
 
-# Logic for 12-hour display (e.g., 8.00)
 if manual_mode:
     decimal_time = st.sidebar.slider("Test Time", 0.0, 23.9, float(hour + minute/60))
     h_24 = int(decimal_time)
@@ -56,7 +48,7 @@ else:
     decimal_time = hour + (minute / 60)
     current_time_string = now.strftime("%-I.%M")
 
-# --- 3. LOGIC & COLORS ---
+# --- 3. LOGIC ---
 sleep_s = sleep_start_i.hour + (sleep_start_i.minute / 60)
 wake_s = wake_up_i.hour + (wake_up_i.minute / 60)
 
@@ -71,28 +63,21 @@ else:
     text_color = "#78350f"
     card_bg = "rgba(255, 255, 255, 0.4)"
 
-# --- 4. CSS (TOTAL UI CLEANUP) ---
-# This hides the right-side icons by making them invisible and 0px wide.
+# --- 4. CSS (NEW SURGICAL TARGETING) ---
 st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-    
     .stApp {{
         background-color: {bg_color};
         color: {text_color};
-        font-family: 'Inter', sans-serif;
-        transition: background 3s ease-in-out;
     }}
 
-    /* HIDE THE RIGHT-SIDE ICONS (Fork, GitHub, Deploy) */
+    /* HIDE ONLY THE RIGHT SIDE OF THE HEADER */
+    /* This targets the container for Fork/GitHub/Deploy/Menu */
     [data-testid="stHeaderActionElements"], .stDeployButton, [data-testid="stToolbar"] {{
         display: none !important;
-        visibility: hidden !important;
-        width: 0px !important;
-        height: 0px !important;
     }}
 
-    /* THE FLOATING SIDEBAR BUTTON */
+    /* DETACH THE SIDEBAR BUTTON AND FORCE IT TO SHOW */
     [data-testid="stSidebarCollapseButton"] {{
         position: fixed !important;
         top: 15px !important;
@@ -114,26 +99,24 @@ st.markdown(f"""
 
     .glass-card {{
         background: {card_bg};
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
         border-radius: 24px;
         padding: 60px 20px;
         text-align: center;
         max-width: 500px;
         margin: 60px auto;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
     }}
-    
-    .icon-div {{ font-size: 100px; margin-bottom: 20px; }}
-    .status-label {{ font-size: 42px; font-weight: 700; margin-bottom: 10px; }}
-    .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
-    footer {{ visibility: hidden !important; }}
+    .icon-div {{ font-size: 100px; margin-bottom: 20px; }}
+    .status-label {{ font-size: 42px; font-weight: 700; }}
+    .clock-label {{ font-size: 32px; opacity: 0.8; }}
+
+    footer {{visibility: hidden !important;}}
     </style>
     """, unsafe_allow_html=True)
 
-# --- 5. UI LAYOUT ---
+# --- 5. UI ---
 st.markdown(f"""
     <div class="glass-card">
         <div class="icon-div">{icon}</div>
@@ -142,14 +125,7 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# Progress Bar (Last 2 hours before wake-up)
-if (wake_s - 2.0) <= decimal_time < wake_s:
-    cols = st.columns([1, 4, 1])
-    with cols[1]:
-        progress = (decimal_time - (wake_s - 2.0)) / 2.0
-        st.progress(min(max(progress, 0.0), 1.0))
-
-# --- 6. AUTO-REFRESH ---
+# --- 6. REFRESH ---
 if not manual_mode:
     time.sleep(5)
     st.rerun()
