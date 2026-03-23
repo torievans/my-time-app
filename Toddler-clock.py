@@ -4,13 +4,16 @@ import pytz
 import time
 
 # --- 0. PAGE CONFIG ---
-# "expanded" forces it open on the first load of a session
 st.set_page_config(
     page_title="Toddler Clock",
     initial_sidebar_state="expanded"
 )
 
-# --- 1. SIDEBAR / LOCATION ---
+# --- 1. SIDEBAR FORCE-OPEN LOGIC ---
+if 'first_run' not in st.session_state:
+    st.session_state['first_run'] = True
+
+# --- 2. SIDEBAR / LOCATION ---
 st.sidebar.header("🌍 Location Settings")
 all_tz = pytz.all_timezones
 favorites = ['Europe/London', 'Europe/Barcelona']
@@ -18,7 +21,7 @@ final_tz_list = favorites + [tz for tz in all_tz if tz not in favorites]
 
 selected_tz = st.sidebar.selectbox("Select your Timezone", options=final_tz_list, index=0)
 
-# --- 2. TIME SETUP ---
+# --- 3. TIME SETUP ---
 try:
     tz = pytz.timezone(selected_tz)
 except Exception:
@@ -49,7 +52,7 @@ else:
     decimal_time = hour + (minute / 60)
     current_time_string = now.strftime("%-I.%M")
 
-# --- 3. LOGIC ---
+# --- 4. LOGIC & COLORS ---
 sleep_s = sleep_start_i.hour + (sleep_start_i.minute / 60)
 wake_s = wake_up_i.hour + (wake_up_i.minute / 60)
 
@@ -64,7 +67,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS (Corrected to keep button alive) ---
+# --- 5. CSS (GHOST MODE) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -72,29 +75,28 @@ st.markdown(f"""
     .stApp {{
         background: {bg_gradient};
         font-family: 'Inter', sans-serif;
-        transition: background 3s ease-in-out;
     }}
     
-    /* STYLE THE BUTTON - Keep it visible but floating */
+    /* GHOST THE RIGHT SIDE: Invisible but keeps the space stable */
+    [data-testid="stHeaderActionElements"], 
+    .stDeployButton, 
+    [data-testid="stToolbar"],
+    [data-testid="stStatusWidget"] {{
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }}
+
+    /* HIGHLIGHT THE PARENT CONTROL BUTTON */
     [data-testid="stSidebarCollapseButton"] {{
         background-color: rgba(255,255,255,0.2) !important;
+        border: 1px solid rgba(255,255,255,0.4) !important;
         border-radius: 50% !important;
         color: white !important;
-        position: fixed !important;
-        top: 15px !important;
-        left: 15px !important;
-        z-index: 99999;
+        visibility: visible !important;
+        opacity: 1 !important;
     }}
 
-    /* HIDE THE JUNK BUT NOT THE HEADER ITSELF */
-    [data-testid="stHeaderActionElements"], .stDeployButton {{
-        display: none !important;
-    }}
-
-    header {{
-        background: transparent !important;
-        color: transparent !important;
-    }}
+    header {{ background: transparent !important; }}
 
     .glass-card {{
         background: {card_bg};
@@ -105,25 +107,19 @@ st.markdown(f"""
         padding: 60px 20px;
         text-align: center;
         max-width: 500px;
-        margin: 40px auto;
+        margin: 60px auto;
         box-shadow: 0 20px 50px rgba(0,0,0,0.1);
     }}
     
-    .icon-div {{ font-size: 100px; margin-bottom: 20px; animation: pulse 4s infinite ease-in-out; }}
-    @keyframes pulse {{
-        0% {{ transform: scale(1); opacity: 0.9; }}
-        50% {{ transform: scale(1.05); opacity: 1; }}
-        100% {{ transform: scale(1); opacity: 0.9; }}
-    }}
-    
+    .icon-div {{ font-size: 100px; margin-bottom: 20px; }}
     .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; }}
-    .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
+    .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; }}
 
     footer {{visibility: hidden;}}
     </style>
     """, unsafe_allow_html=True)
 
-# --- 5. UI ---
+# --- 6. UI ---
 st.markdown(f"""
     <div class="glass-card">
         <div class="icon-div">{icon}</div>
@@ -139,7 +135,7 @@ if (wake_s - 2.0) <= decimal_time < wake_s:
         progress = (decimal_time - (wake_s - 2.0)) / 2.0
         st.progress(min(max(progress, 0.0), 1.0))
 
-# --- 6. REFRESH ---
+# --- 7. AUTO-REFRESH ---
 if not manual_mode:
     time.sleep(5)
     st.rerun()
