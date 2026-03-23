@@ -4,6 +4,7 @@ import pytz
 import time
 
 # --- 0. PAGE CONFIG ---
+# This MUST be the very first Streamlit command
 st.set_page_config(
     page_title="Toddler Clock",
     initial_sidebar_state="expanded"
@@ -12,20 +13,17 @@ st.set_page_config(
 # --- 1. SIDEBAR SETTINGS (Parent Control Panel) ---
 st.sidebar.header("🌍 Location Settings")
 
-# Common timezones list - you can add more if needed!
-common_tz = [
-    'Europe/London', 
-    'Europe/Paris', 
-    'America/New_York', 
-    'America/Los_Angeles', 
-    'Asia/Tokyo', 
-    'Australia/Sydney'
-]
+# 1a. Timezone Selection
+all_timezones = pytz.all_timezones
+# Added Barcelona here as requested!
+favorites = ['Europe/Barcelona', 'Europe/London', 'America/New_York', 'Europe/Paris']
+remaining_tz = [tz for tz in all_timezones if tz not in favorites]
+final_tz_list = favorites + remaining_tz
 
 selected_tz = st.sidebar.selectbox(
     "Select your Timezone",
-    options=common_tz,
-    index=0  # Defaults to London
+    options=final_tz_list,
+    index=0  # This makes Barcelona the default starting option
 )
 
 # --- 2. SETUP TIME BASED ON SELECTION ---
@@ -36,6 +34,8 @@ minute = now.minute
 
 st.sidebar.markdown("---")
 st.sidebar.header("⏰ Schedule Settings")
+
+# 1b. Sleep/Wake Inputs
 sleep_start_i = st.sidebar.time_input("Sleep Time Starts", dt_time(19, 0))
 wake_up_i = st.sidebar.time_input("Wake Time Starts", dt_time(7, 0))
 show_clock = st.sidebar.checkbox("Show Digital Clock", value=True)
@@ -44,7 +44,7 @@ st.sidebar.markdown("---")
 st.sidebar.header("🛠️ Developer Tools")
 manual_mode = st.sidebar.checkbox("Manual Time Override (Preview)")
 
-# Determine the time to display
+# --- 3. TIME CALCULATION ---
 if manual_mode:
     decimal_time = st.sidebar.slider("Test Time of Day", 0.0, 23.9, float(hour + minute/60))
     display_hour = int(decimal_time)
@@ -54,7 +54,7 @@ else:
     decimal_time = hour + (minute / 60)
     current_time_string = now.strftime("%H:%M")
 
-# --- 3. LOGIC ---
+# --- 4. LOGIC & COLORS ---
 sleep_s = sleep_start_i.hour + (sleep_start_i.minute / 60)
 wake_s = wake_up_i.hour + (wake_up_i.minute / 60)
 
@@ -69,8 +69,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS ---
-# --- 4. CSS (Corrected to show the sidebar button) ---
+# --- 5. CSS (The Visual Styling) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -81,22 +80,10 @@ st.markdown(f"""
         transition: background 3s ease-in-out;
     }}
 
-    /* --- SIDEBAR BUTTON FIX --- */
-    /* This ensures the ">" arrow is visible and clickable */
     [data-testid="stSidebarCollapseButton"] {{
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        background-color: rgba(255, 255, 255, 0.2) !important;
+        background-color: rgba(255,255,255,0.2) !important;
         border-radius: 50%;
         color: white !important;
-        z-index: 999999;
-        display: block !important;
-    }}
-    
-    /* Hover effect for the button */
-    [data-testid="stSidebarCollapseButton"]:hover {{
-        background-color: rgba(255, 255, 255, 0.4) !important;
     }}
 
     .glass-card {{
@@ -138,13 +125,11 @@ st.markdown(f"""
         opacity: 0.8;
     }}
 
-    /* Hide the rest of the junk but keep the app functional */
-    footer {{visibility: hidden;}}
-    header {{background-color: transparent !important;}}
+    #MainMenu, footer, header {{visibility: hidden;}}
     </style>
     """, unsafe_allow_html=True)
 
-# --- 5. UI LAYOUT ---
+# --- 6. MAIN UI ---
 st.markdown(f"""
     <div class="glass-card">
         <div class="icon-div">{icon}</div>
@@ -161,7 +146,7 @@ if (wake_s - 2.0) <= decimal_time < wake_s:
         st.progress(min(max(progress, 0.0), 1.0))
         st.markdown(f"<p style='text-align:center; color:{text_color}; font-size:14px; opacity:0.8;'>Morning is almost here...</p>", unsafe_allow_html=True)
 
-# --- 6. LIVE REFRESH ---
+# --- 7. AUTO-REFRESH ---
 if not manual_mode:
     time.sleep(5)
     st.rerun()
