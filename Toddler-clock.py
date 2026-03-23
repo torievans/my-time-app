@@ -65,7 +65,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS (Universal Mobile & Desktop Cleanup) ---
+# --- 4. CSS ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -75,32 +75,11 @@ st.markdown(f"""
         font-family: 'Inter', sans-serif;
         transition: background 3s ease-in-out;
     }}
-
-    /* --- THE UNIVERSAL CLEANUP --- */
-    /* This hides the entire top-right block (Fork, GitHub, Deploy, Settings) */
-    /* It works by targeting any element that starts with 'stHeader' or 'stToolbar' */
-    div[class^="st-emotion-cache-"] > div[data-testid="stHeaderActionElements"],
-    [data-testid="stHeader"], 
-    .stDeployButton, 
-    #tabs-bue-0-tab-1,
-    [data-testid="stToolbar"] {{
-        visibility: hidden !important;
-        display: none !important;
-    }}
-
-    /* --- THE "PARENT CONTROLS" BUTTON --- */
-    /* We explicitly force this button to stay visible */
+    
     [data-testid="stSidebarCollapseButton"] {{
-        position: fixed;
-        top: 15px;
-        left: 15px;
-        background-color: rgba(255, 255, 255, 0.3) !important;
-        border: 1px solid rgba(255, 255, 255, 0.5) !important;
-        border-radius: 12px;
+        background-color: rgba(255,255,255,0.2) !important;
+        border-radius: 50%;
         color: white !important;
-        z-index: 999999;
-        display: flex !important;
-        visibility: visible !important;
     }}
 
     .glass-card {{
@@ -109,10 +88,10 @@ st.markdown(f"""
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 24px;
-        padding: 40px 20px;
+        padding: 60px 20px;
         text-align: center;
         max-width: 500px;
-        margin: 60px auto 20px auto;
+        margin: 40px auto;
         box-shadow: 0 20px 50px rgba(0,0,0,0.1);
     }}
     
@@ -126,7 +105,7 @@ st.markdown(f"""
     .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; }}
     .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
-    footer {{visibility: hidden !important;}}
+    #MainMenu, footer, header {{visibility: hidden;}}
     </style>
     """, unsafe_allow_html=True)
 
