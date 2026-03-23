@@ -3,89 +3,111 @@ from datetime import datetime, time as dt_time
 import pytz
 import time
 
-# --- 1. SETUP TIME DATA ---
+# --- 1. SETUP & TIMEZONE ---
 tz = pytz.timezone('Europe/London')
 now = datetime.now(tz)
-current_time_string = now.strftime("%H:%M:%S")
+curr_s = now.hour + (now.minute / 60)
 
 # --- 2. SIDEBAR SETTINGS ---
-st.sidebar.header("⏰ Schedule Settings")
+st.sidebar.header("⚙️ Settings")
+sleep_start_i = st.sidebar.time_input("Sleep Time", dt_time(19, 0)) # Default 7pm
+wake_up_i = st.sidebar.time_input("Wake Time", dt_time(7, 0))     # Default 7am
+show_clock = st.sidebar.checkbox("Show Digital Clock", value=True)
 
-# Set the default start/end times
-sleep_start_input = st.sidebar.time_input("Sleepy Time Starts", dt_time(17, 0)) # Default 5:00 PM
-wake_up_input = st.sidebar.time_input("Wake Up Time Starts", dt_time(7, 30))    # Default 7:30 AM
+# --- 3. LOGIC & TRANSPOSED THEME ---
+sleep_s = sleep_start_i.hour + (sleep_start_i.minute / 60)
+wake_s = wake_up_i.hour + (wake_up_i.minute / 60)
 
-# Convert inputs to decimals for our logic (e.g., 7:30 -> 7.5)
-sleep_start = sleep_start_input.hour + (sleep_start_input.minute / 60)
-wake_up_start = wake_up_input.hour + (wake_up_input.minute / 60)
-
-# --- 3. DEBUGGER SECTION ---
-st.sidebar.header("🛠️ Developer Tools")
-manual_mode = st.sidebar.checkbox("Manual Time Override")
-
-if manual_mode:
-    decimal_time = st.sidebar.slider("Test Time", 0.0, 23.9, float(now.hour + now.minute/60))
-    st.sidebar.warning(f"Viewing: {int(decimal_time):02d}:{int((decimal_time%1)*60):02d}")
+if curr_s >= sleep_s or curr_s < wake_s:
+    # Night Palette (Indigo/Slate from Lovable)
+    status, icon = "Sleepy Time", "🌙"
+    bg_gradient = "linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)"
+    card_bg = "rgba(30, 27, 75, 0.4)"
+    accent_color = "#818cf8" # Indigo 400
+    text_color = "#e0e7ff"
 else:
-    decimal_time = now.hour + (now.minute / 60)
+    # Day Palette (Amber/Yellow from Lovable)
+    status, icon = "Rise & Shine!", "☀️"
+    bg_gradient = "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)"
+    card_bg = "rgba(255, 255, 255, 0.6)"
+    accent_color = "#d97706" # Amber 600
+    text_color = "#78350f"
 
-# --- 4. UPDATED LOGIC ---
-# The "Night" condition: If time is AFTER sleep starts OR BEFORE wake up starts
-if decimal_time >= sleep_start or decimal_time < wake_up_start:
-    status = "Sleepy Time"
-    bg_color = "#0C1445" 
-    text_color = "white"
-    icon = "🦉" 
-else:
-    status = "Wake Up Time!"
-    bg_color = "#FFD700" 
-    text_color = "black"
-    icon = "☀️"
-
-# --- 5. PROGRESS LOGIC (Starts 2 hours before wake up) ---
-show_progress = False
-progress_window_start = wake_up_start - 2.0
-
-if progress_window_start <= decimal_time < wake_up_start:
-    show_progress = True
-    # Calculate progress over that 2-hour window
-    progress_val = (decimal_time - progress_window_start) / 2.0
-    progress_val = min(max(progress_val, 0.0), 1.0)
-
-# --- 6. STYLING & UI ---
+# --- 4. CSS TRANSPOSED FROM LOVABLE (Tailwind-like styles) ---
 st.markdown(f"""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    
     .stApp {{
-        background-color: {bg_color};
+        background: {bg_gradient};
+        font-family: 'Inter', sans-serif;
+        transition: background 3s ease-in-out;
+    }}
+    
+    /* The Glass Card */
+    .glass-card {{
+        background: {card_bg};
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        padding: 60px 20px;
+        text-align: center;
+        max-width: 500px;
+        margin: 80px auto;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+    }}
+    
+    /* Animated Icon */
+    .icon-div {{
+        font-size: 100px;
+        margin-bottom: 20px;
+        animation: pulse 4s infinite ease-in-out;
+    }}
+    
+    @keyframes pulse {{
+        0% {{ transform: scale(1); opacity: 0.9; }}
+        50% {{ transform: scale(1.1); opacity: 1; }}
+        100% {{ transform: scale(1); opacity: 0.9; }}
+    }}
+    
+    .status-label {{
+        font-size: 42px;
+        font-weight: 700;
         color: {text_color};
-        transition: background-color 2s;
+        letter-spacing: -0.02em;
+        margin-bottom: 10px;
     }}
-    .big-text {{
-        font-size: 100px !important;
-        text-align: center;
-        margin-bottom: 0px;
+    
+    .clock-label {{
+        font-size: 20px;
+        font-weight: 400;
+        color: {text_color};
+        opacity: 0.7;
     }}
-    .status-text {{
-        font-size: 50px;
-        font-weight: bold;
-        text-align: center;
-        margin-top: -30px;
-    }}
+
+    /* Hide Streamlit elements for a cleaner UI */
+    #MainMenu, footer, header {{visibility: hidden;}}
     </style>
     """, unsafe_allow_html=True)
 
-st.markdown(f'<p class="big-text">{icon}</p>', unsafe_allow_html=True)
-st.markdown(f'<p class="status-text">{status}</p>', unsafe_allow_html=True)
+# --- 5. UI LAYOUT ---
+st.markdown(f"""
+    <div class="glass-card">
+        <div class="icon-div">{icon}</div>
+        <div class="status-label">{status}</div>
+        {"<div class='clock-label'>" + now.strftime("%H:%M") + "</div>" if show_clock else ""}
+    </div>
+    """, unsafe_allow_html=True)
 
-if not manual_mode:
-    st.markdown(f'<div style="text-align:center; opacity:0.6;">{current_time_string}</div>', unsafe_allow_html=True)
+# Progress Bar (Last 2 hours of sleep)
+if (wake_s - 2.0) <= curr_s < wake_s:
+    cols = st.columns([1, 4, 1])
+    with cols[1]:
+        progress = (curr_s - (wake_s - 2.0)) / 2.0
+        st.progress(min(max(progress, 0.0), 1.0))
+        st.markdown(f"<p style='text-align:center; color:{text_color}; font-size:14px;'>Morning is almost here...</p>", unsafe_allow_html=True)
 
-if show_progress:
-    st.write("---")
-    st.write("The sun is waking up...")
-    st.progress(progress_val)
-
-# --- 7. AUTO-REFRESH ---
-if not manual_mode:
-    time.sleep(10)
-    st.rerun()
+# --- 6. LIVE REFRESH ---
+time.sleep(5)
+st.rerun()
