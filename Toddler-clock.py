@@ -3,21 +3,39 @@ from datetime import datetime, time as dt_time
 import pytz
 import time
 
-# --- 0. PREVENT SIDEBAR FROM HIDING ---
-# This MUST be the first streamlit command
+# --- 0. PAGE CONFIG ---
 st.set_page_config(
     page_title="Toddler Clock",
-    initial_sidebar_state="expanded" 
+    initial_sidebar_state="expanded"
 )
 
-# --- 1. SETUP & TIMEZONE ---
-tz = pytz.timezone('Europe/London')
+# --- 1. SIDEBAR SETTINGS (Parent Control Panel) ---
+st.sidebar.header("🌍 Location Settings")
+
+# Common timezones list - you can add more if needed!
+common_tz = [
+    'Europe/London', 
+    'Europe/Paris', 
+    'America/New_York', 
+    'America/Los_Angeles', 
+    'Asia/Tokyo', 
+    'Australia/Sydney'
+]
+
+selected_tz = st.sidebar.selectbox(
+    "Select your Timezone",
+    options=common_tz,
+    index=0  # Defaults to London
+)
+
+# --- 2. SETUP TIME BASED ON SELECTION ---
+tz = pytz.timezone(selected_tz)
 now = datetime.now(tz)
 hour = now.hour
 minute = now.minute
 
-# --- 2. SIDEBAR SETTINGS ---
-st.sidebar.header("⚙️ App Settings")
+st.sidebar.markdown("---")
+st.sidebar.header("⏰ Schedule Settings")
 sleep_start_i = st.sidebar.time_input("Sleep Time Starts", dt_time(19, 0))
 wake_up_i = st.sidebar.time_input("Wake Time Starts", dt_time(7, 0))
 show_clock = st.sidebar.checkbox("Show Digital Clock", value=True)
@@ -26,6 +44,7 @@ st.sidebar.markdown("---")
 st.sidebar.header("🛠️ Developer Tools")
 manual_mode = st.sidebar.checkbox("Manual Time Override (Preview)")
 
+# Determine the time to display
 if manual_mode:
     decimal_time = st.sidebar.slider("Test Time of Day", 0.0, 23.9, float(hour + minute/60))
     display_hour = int(decimal_time)
