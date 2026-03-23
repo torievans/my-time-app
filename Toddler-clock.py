@@ -4,52 +4,56 @@ import pytz
 import time
 
 # --- 0. PAGE CONFIG ---
-# This MUST be the very first Streamlit command
 st.set_page_config(
     page_title="Toddler Clock",
     initial_sidebar_state="expanded"
 )
 
-# --- 1. SIDEBAR SETTINGS (Parent Control Panel) ---
+# --- 1. SIDEBAR / LOCATION ---
 st.sidebar.header("🌍 Location Settings")
 
-# Get the clean list of all world timezones
+# 1a. Create the custom ordered list
 all_tz = pytz.all_timezones
+# Define your favorites in the exact order you want
+favorites = ['Europe/London', 'Europe/Barcelona']
 
-# We find where Barcelona is in the list so we can set it as default
-try:
-    default_index = all_tz.index('Europe/Barcelona')
-except ValueError:
-    default_index = 0 # Fallback if for some reason it's not found
+# Create the full list: Favorites + everything else (removing duplicates)
+final_tz_list = favorites + [tz for tz in all_tz if tz not in favorites]
 
 selected_tz = st.sidebar.selectbox(
     "Select your Timezone",
-    options=all_tz,
-    index=default_index
+    options=final_tz_list,
+    index=0  # This ensures London (the first item) is selected by default
 )
 
-# --- 2. SETUP TIME BASED ON SELECTION ---
-# We use a try/except block here to prevent the red error screen
+# --- 2. TIME SETUP ---
 try:
     tz = pytz.timezone(selected_tz)
 except Exception:
-    tz = pytz.timezone('UTC') # Ultimate fallback to prevent crashing
+    tz = pytz.timezone('UTC')
 
 now = datetime.now(tz)
 hour = now.hour
 minute = now.minute
 
-# --- 3. TIME CALCULATION ---
+st.sidebar.markdown("---")
+st.sidebar.header("⏰ Schedule Settings")
+sleep_start_i = st.sidebar.time_input("Sleep Time Starts", dt_time(19, 0))
+wake_up_i = st.sidebar.time_input("Wake Time Starts", dt_time(7, 0))
+show_clock = st.sidebar.checkbox("Show Digital Clock", value=True)
+
+st.sidebar.markdown("---")
+st.sidebar.header("🛠️ Developer Tools")
+manual_mode = st.sidebar.checkbox("Manual Time Override (Preview)")
+
 if manual_mode:
-    decimal_time = st.sidebar.slider("Test Time of Day", 0.0, 23.9, float(hour + minute/60))
-    display_hour = int(decimal_time)
-    display_min = int((decimal_time % 1) * 60)
-    current_time_string = f"{display_hour:02d}:{display_min:02d}"
+    decimal_time = st.sidebar.slider("Test Time", 0.0, 23.9, float(hour + minute/60))
+    current_time_string = f"{int(decimal_time):02d}:{int((decimal_time%1)*60):02d}"
 else:
     decimal_time = hour + (minute / 60)
     current_time_string = now.strftime("%H:%M")
 
-# --- 4. LOGIC & COLORS ---
+# --- 3. LOGIC ---
 sleep_s = sleep_start_i.hour + (sleep_start_i.minute / 60)
 wake_s = wake_up_i.hour + (wake_up_i.minute / 60)
 
@@ -64,7 +68,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 5. CSS (The Visual Styling) ---
+# --- 4. CSS ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -74,7 +78,7 @@ st.markdown(f"""
         font-family: 'Inter', sans-serif;
         transition: background 3s ease-in-out;
     }}
-
+    
     [data-testid="stSidebarCollapseButton"] {{
         background-color: rgba(255,255,255,0.2) !important;
         border-radius: 50%;
@@ -94,37 +98,21 @@ st.markdown(f"""
         box-shadow: 0 20px 50px rgba(0,0,0,0.1);
     }}
     
-    .icon-div {{
-        font-size: 100px;
-        margin-bottom: 20px;
-        animation: pulse 4s infinite ease-in-out;
-    }}
-    
+    .icon-div {{ font-size: 100px; margin-bottom: 20px; animation: pulse 4s infinite ease-in-out; }}
     @keyframes pulse {{
         0% {{ transform: scale(1); opacity: 0.9; }}
         50% {{ transform: scale(1.05); opacity: 1; }}
         100% {{ transform: scale(1); opacity: 0.9; }}
     }}
     
-    .status-label {{
-        font-size: 42px;
-        font-weight: 700;
-        color: {text_color};
-        letter-spacing: -0.02em;
-        margin-bottom: 10px;
-    }}
-    
-    .clock-label {{
-        font-size: 24px;
-        color: {text_color};
-        opacity: 0.8;
-    }}
+    .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; }}
+    .clock-label {{ font-size: 24px; color: {text_color}; opacity: 0.8; }}
 
     #MainMenu, footer, header {{visibility: hidden;}}
     </style>
     """, unsafe_allow_html=True)
 
-# --- 6. MAIN UI ---
+# --- 5. UI ---
 st.markdown(f"""
     <div class="glass-card">
         <div class="icon-div">{icon}</div>
@@ -133,15 +121,14 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# Progress Bar (Last 2 hours before wake-up)
+# Progress Bar
 if (wake_s - 2.0) <= decimal_time < wake_s:
     cols = st.columns([1, 4, 1])
     with cols[1]:
         progress = (decimal_time - (wake_s - 2.0)) / 2.0
         st.progress(min(max(progress, 0.0), 1.0))
-        st.markdown(f"<p style='text-align:center; color:{text_color}; font-size:14px; opacity:0.8;'>Morning is almost here...</p>", unsafe_allow_html=True)
 
-# --- 7. AUTO-REFRESH ---
+# --- 6. REFRESH ---
 if not manual_mode:
     time.sleep(5)
     st.rerun()
