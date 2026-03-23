@@ -15,7 +15,7 @@ all_tz = pytz.all_timezones
 favorites = ['Europe/London', 'Europe/Barcelona']
 final_tz_list = favorites + [tz for tz in all_tz if tz not in favorites]
 
-selected_tz = st.sidebar.selectbox("Select your Timezone", options=final_tz_list, index=0)
+selected_tz = st.sidebar.selectbox("Select Timezone", options=final_tz_list, index=0)
 
 # --- 2. TIME SETUP ---
 try:
@@ -35,7 +35,7 @@ show_clock = st.sidebar.checkbox("Show Digital Clock", value=True)
 
 st.sidebar.markdown("---")
 st.sidebar.header("🛠️ Developer Tools")
-manual_mode = st.sidebar.checkbox("Manual Time Override (Preview)")
+manual_mode = st.sidebar.checkbox("Manual Time Override")
 
 if manual_mode:
     decimal_time = st.sidebar.slider("Test Time", 0.0, 23.9, float(hour + minute/60))
@@ -63,60 +63,48 @@ else:
     text_color = "#78350f"
     card_bg = "rgba(255, 255, 255, 0.4)"
 
-# --- 4. CSS (NEW SURGICAL TARGETING) ---
+# --- 4. CSS (CLEANEST VERSION) ---
 st.markdown(f"""
     <style>
-    .stApp {{
-        background-color: {bg_color};
-        color: {text_color};
-    }}
-
-    /* HIDE ONLY THE RIGHT SIDE OF THE HEADER */
-    /* This targets the container for Fork/GitHub/Deploy/Menu */
-    [data-testid="stHeaderActionElements"], .stDeployButton, [data-testid="stToolbar"] {{
-        display: none !important;
-    }}
-
-    /* DETACH THE SIDEBAR BUTTON AND FORCE IT TO SHOW */
-    [data-testid="stSidebarCollapseButton"] {{
-        position: fixed !important;
-        top: 15px !important;
-        left: 15px !important;
-        background-color: rgba(255, 255, 255, 0.2) !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
-        border-radius: 50% !important;
-        width: 45px !important;
-        height: 45px !important;
-        color: white !important;
-        z-index: 999999 !important;
-        display: flex !important;
-        visibility: visible !important;
-    }}
-
+    .stApp {{ background-color: {bg_color}; color: {text_color}; }}
+    
+    /* HIDE THE ENTIRE TOP BAR COMPLETELY */
     header[data-testid="stHeader"] {{
-        background: transparent !important;
+        visibility: hidden !important;
+        height: 0px !important;
     }}
 
     .glass-card {{
         background: {card_bg};
         backdrop-filter: blur(10px);
         border-radius: 24px;
-        padding: 60px 20px;
+        padding: 40px 20px;
         text-align: center;
         max-width: 500px;
-        margin: 60px auto;
+        margin: 100px auto 20px auto;
         border: 1px solid rgba(255,255,255,0.2);
     }}
 
     .icon-div {{ font-size: 100px; margin-bottom: 20px; }}
     .status-label {{ font-size: 42px; font-weight: 700; }}
     .clock-label {{ font-size: 32px; opacity: 0.8; }}
+    
+    /* Style the fallback button */
+    .stButton>button {{
+        background-color: transparent !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
+        color: {text_color} !important;
+        font-size: 20px !important;
+        margin-top: 20px !important;
+        border-radius: 12px !important;
+    }}
 
     footer {{visibility: hidden !important;}}
     </style>
     """, unsafe_allow_html=True)
 
 # --- 5. UI ---
+# The Main Card
 st.markdown(f"""
     <div class="glass-card">
         <div class="icon-div">{icon}</div>
@@ -124,6 +112,15 @@ st.markdown(f"""
         {"<div class='clock-label'>" + current_time_string + "</div>" if show_clock else ""}
     </div>
     """, unsafe_allow_html=True)
+
+# THE FALLBACK CONTROL BUTTON
+# This creates a small button below the card that opens the sidebar
+cols = st.columns([1, 1, 1])
+with cols[1]:
+    if st.button("⚙️ Settings"):
+        # This is a trick: in mobile, Streamlit buttons usually 
+        # force the UI to refresh/open sidebars if state changes
+        st.sidebar.markdown("### ⚙️ Parent Controls Active")
 
 # --- 6. REFRESH ---
 if not manual_mode:
