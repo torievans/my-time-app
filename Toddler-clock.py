@@ -105,7 +105,8 @@ st.markdown(f"""
     .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; }}
     .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
-    #MainMenu, footer, header {{visibility: hidden;}}
+    /* header removed from hidden list to keep controls functional */
+    #MainMenu, footer {{visibility: hidden;}}
     </style>
     """, unsafe_allow_html=True)
 
