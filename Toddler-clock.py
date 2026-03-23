@@ -65,8 +65,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS ---
-# --- 4. CSS (Enhanced Sidebar Button Visibility) ---
+# --- 4. CSS (Clean & Developer Toolbar Hidden) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -77,8 +76,12 @@ st.markdown(f"""
         transition: background 3s ease-in-out;
     }}
 
-    /* --- THE "PARENT CONTROLS" BUTTON --- */
-    /* This forces the > arrow to be a visible floating button */
+    /* Hides the Dev Toolbar (Share, Star, GitHub, etc.) */
+    [data-testid="stStatusWidget"], [data-testid="stToolbar"], .stDeployButton {{
+        display: none !important;
+    }}
+
+    /* The "Parent Controls" Sidebar Button */
     [data-testid="stSidebarCollapseButton"] {{
         position: fixed;
         top: 15px;
@@ -89,15 +92,8 @@ st.markdown(f"""
         color: {text_color} !important;
         z-index: 999999;
         display: flex !important;
-        padding: 5px;
-    }}
-    
-    /* Hover effect */
-    [data-testid="stSidebarCollapseButton"]:hover {{
-        background-color: rgba(255, 255, 255, 0.5) !important;
     }}
 
-    /* Center the main card for mobile */
     .glass-card {{
         background: {card_bg};
         backdrop-filter: blur(12px);
@@ -121,11 +117,11 @@ st.markdown(f"""
     .status-label {{ font-size: 36px; font-weight: 700; color: {text_color}; }}
     .clock-label {{ font-size: 28px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
-    /* Hide the default Streamlit clutter */
     footer {{visibility: hidden;}}
     header {{background: transparent !important;}}
     </style>
     """, unsafe_allow_html=True)
+
 # --- 5. UI ---
 st.markdown(f"""
     <div class="glass-card">
