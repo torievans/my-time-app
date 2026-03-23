@@ -65,7 +65,7 @@ else:
     card_bg = "rgba(255, 255, 255, 0.6)"
     text_color = "#78350f"
 
-# --- 4. CSS (Final UI Cleanup - Keeping Sidebar Button) ---
+# --- 4. CSS (Universal Mobile & Desktop Cleanup) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -76,17 +76,20 @@ st.markdown(f"""
         transition: background 3s ease-in-out;
     }}
 
-    /* Hides ONLY the right-side toolbar (Fork, GitHub, etc.) */
-    [data-testid="stHeaderActionElements"], .st-emotion-cache-199v05d, .stDeployButton {{
+    /* --- THE UNIVERSAL CLEANUP --- */
+    /* This hides the entire top-right block (Fork, GitHub, Deploy, Settings) */
+    /* It works by targeting any element that starts with 'stHeader' or 'stToolbar' */
+    div[class^="st-emotion-cache-"] > div[data-testid="stHeaderActionElements"],
+    [data-testid="stHeader"], 
+    .stDeployButton, 
+    #tabs-bue-0-tab-1,
+    [data-testid="stToolbar"] {{
+        visibility: hidden !important;
         display: none !important;
     }}
 
-    /* Ensure the Header background is invisible so it doesn't block the card */
-    header {{
-        background-color: transparent !important;
-    }}
-
-    /* The "Parent Controls" Sidebar Button - Styled to be visible */
+    /* --- THE "PARENT CONTROLS" BUTTON --- */
+    /* We explicitly force this button to stay visible */
     [data-testid="stSidebarCollapseButton"] {{
         position: fixed;
         top: 15px;
@@ -97,6 +100,7 @@ st.markdown(f"""
         color: white !important;
         z-index: 999999;
         display: flex !important;
+        visibility: visible !important;
     }}
 
     .glass-card {{
@@ -107,20 +111,20 @@ st.markdown(f"""
         border-radius: 24px;
         padding: 40px 20px;
         text-align: center;
-        max-width: 90%;
-        margin: 80px auto 20px auto;
+        max-width: 500px;
+        margin: 60px auto 20px auto;
         box-shadow: 0 20px 50px rgba(0,0,0,0.1);
     }}
     
-    .icon-div {{ font-size: 80px; margin-bottom: 10px; animation: pulse 4s infinite ease-in-out; }}
+    .icon-div {{ font-size: 100px; margin-bottom: 20px; animation: pulse 4s infinite ease-in-out; }}
     @keyframes pulse {{
         0% {{ transform: scale(1); opacity: 0.9; }}
         50% {{ transform: scale(1.05); opacity: 1; }}
         100% {{ transform: scale(1); opacity: 0.9; }}
     }}
     
-    .status-label {{ font-size: 36px; font-weight: 700; color: {text_color}; }}
-    .clock-label {{ font-size: 28px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
+    .status-label {{ font-size: 42px; font-weight: 700; color: {text_color}; }}
+    .clock-label {{ font-size: 32px; color: {text_color}; opacity: 0.8; font-weight: 400; }}
 
     footer {{visibility: hidden !important;}}
     </style>
