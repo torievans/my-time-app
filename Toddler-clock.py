@@ -11,20 +11,11 @@ st.set_page_config(
 
 # --- 1. SIDEBAR / LOCATION ---
 st.sidebar.header("🌍 Location Settings")
-
-# 1a. Create the custom ordered list
 all_tz = pytz.all_timezones
-# Define your favorites in the exact order you want
 favorites = ['Europe/London', 'Europe/Barcelona']
-
-# Create the full list: Favorites + everything else (removing duplicates)
 final_tz_list = favorites + [tz for tz in all_tz if tz not in favorites]
 
-selected_tz = st.sidebar.selectbox(
-    "Select your Timezone",
-    options=final_tz_list,
-    index=0  # This ensures London (the first item) is selected by default
-)
+selected_tz = st.sidebar.selectbox("Select your Timezone", options=final_tz_list, index=0)
 
 # --- 2. TIME SETUP ---
 try:
@@ -48,10 +39,17 @@ manual_mode = st.sidebar.checkbox("Manual Time Override (Preview)")
 
 if manual_mode:
     decimal_time = st.sidebar.slider("Test Time", 0.0, 23.9, float(hour + minute/60))
-    current_time_string = f"{int(decimal_time):02d}:{int((decimal_time%1)*60):02d}"
+    h_24 = int(decimal_time)
+    m = int((decimal_time % 1) * 60)
+    # Convert 24h to 12h without leading zero
+    h_12 = h_24 % 12
+    h_12 = 12 if h_12 == 0 else h_12
+    am_pm = "am" if h_24 < 12 else "pm"
+    current_time_string = f"{h_12}.{m:02d} {am_pm}"
 else:
     decimal_time = hour + (minute / 60)
-    current_time_string = now.strftime("%H:%M")
+    # %-I removes the leading zero, . replaces :, %p is AM/PM (lowered to am/pm)
+    current_time_string = now.strftime("%-I.%M %p").lower()
 
 # --- 3. LOGIC ---
 sleep_s = sleep_start_i.hour + (sleep_start_i.minute / 60)
